@@ -29,7 +29,7 @@ int main() {
     // Create file to test system call Create
     char fileName[256];
     PrintString("Enter file's name: ");
-    ReadString(fileName, 5);
+    ReadString(fileName, 8); //input file k.txt
     if (CreateFile(fileName) == 0) {
         PrintString("Created successfully file: ");
         PrintString(fileName);
