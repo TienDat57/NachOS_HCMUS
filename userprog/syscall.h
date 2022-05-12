@@ -18,36 +18,36 @@
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
-#define SC_Halt 0
-#define SC_Exit 1
-#define SC_Exec 2
-#define SC_Join 3
-#define SC_Create 4
-#define SC_Remove 5
-#define SC_Open 6
-#define SC_Read 7
-#define SC_Write 8
-#define SC_Seek 9
-#define SC_Close 10
-#define SC_ThreadFork 11
-#define SC_ThreadYield 12
-#define SC_ExecV 13
-#define SC_ThreadExit 14
-#define SC_ThreadJoin 15
+#define SC_Halt		0
+#define SC_Exit		1
+#define SC_Exec		2
+#define SC_Join		3
+#define SC_Create	4
+#define SC_Remove       5
+#define SC_Open		6
+#define SC_Read		7
+#define SC_Write	8
+#define SC_Seek         9
+#define SC_Close	10
+#define SC_ThreadFork	11
+#define SC_ThreadYield	12
+#define SC_ExecV	13
+#define SC_ThreadExit   14
+#define SC_ThreadJoin   15
 
-#define SC_Add 42
-#define SC_ReadNum 43
-#define SC_PrintNum 44
-#define SC_ReadChar 45
-#define SC_PrintChar 46
-#define SC_RandomNum 47
-#define SC_ReadString 48
-#define SC_PrintString 49
-#define SC_CreateFile 50
-#define SC_CreateSemaphore 51
-#define SC_Wait 52
-#define SC_Signal 53
-#define SC_GetPid 54
+#define SC_Add 16
+#define SC_ReadNum 17
+#define SC_PrintNum 18
+#define SC_ReadChar 19
+#define SC_PrintChar 20
+#define SC_RandomNum 21
+#define SC_ReadString 22
+#define SC_PrintString 23
+#define SC_CreateFile 24
+#define SC_CreateSemaphore 25
+#define SC_Wait 26
+#define SC_Signal 27
+#define SC_GetPid 28
 
 #ifndef IN_ASM
 
@@ -72,7 +72,7 @@ int Add(int op1, int op2);
 
 int ReadNum();
 
-void PrintNum(int num);
+void PrintNum(int number);
 
 char ReadChar();
 
@@ -172,15 +172,6 @@ int Seek(int position, OpenFileId id);
  * Return 1 on success, negative error code on failure
  */
 int Close(OpenFileId id);
-
-// Ham cho semaphore
-// Success: 0 - Failed: -1
-// Ham tao 1 semaphore voi ten semaphore
-int CreateSemaphore(char *name, int semval);
-
-int Wait(char *name);
-
-int Signal(char *name);
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program.

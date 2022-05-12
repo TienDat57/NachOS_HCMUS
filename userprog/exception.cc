@@ -248,91 +248,6 @@ void handle_SC_Seek() {
     return countValuePC();
 }
 
-void handle_SC_Exec() {
-    int virtAddr;
-    virtAddr = kernel->machine->ReadRegister(4);  
-    char* name;
-    name = stringUser2System(virtAddr); 
-    if (name == NULL) {
-        DEBUG(dbgSys, "\n Not enough memory in System");
-        ASSERT(false);
-        kernel->machine->WriteRegister(2, -1);
-        return countValuePC();
-    }
-
-    kernel->machine->WriteRegister(2, SysExec(name));
-    return countValuePC();
-}
-
-void handle_SC_Join() {
-    int id = kernel->machine->ReadRegister(4);
-    kernel->machine->WriteRegister(2, SysJoin(id));
-    return countValuePC();
-}
-
-void handle_SC_Exit() {
-    int id = kernel->machine->ReadRegister(4);
-    kernel->machine->WriteRegister(2, SysExit(id));
-    return countValuePC();
-}
-
-void handle_SC_CreateSemaphore() {
-    int virtAddr = kernel->machine->ReadRegister(4);
-    int semval = kernel->machine->ReadRegister(5);
-
-    char* name = stringUser2System(virtAddr);
-    if (name == NULL) {
-        DEBUG(dbgSys, "\n Not enough memory in System");
-        ASSERT(false);
-        kernel->machine->WriteRegister(2, -1);
-        delete[] name;
-        return countValuePC();
-    }
-
-    kernel->machine->WriteRegister(2, SysCreateSemaphore(name, semval));
-    delete[] name;
-    return countValuePC();
-}
-
-void handle_SC_Wait() {
-    int virtAddr = kernel->machine->ReadRegister(4);
-
-    char* name = stringUser2System(virtAddr);
-    if (name == NULL) {
-        DEBUG(dbgSys, "\n Not enough memory in System");
-        ASSERT(false);
-        kernel->machine->WriteRegister(2, -1);
-        delete[] name;
-        return countValuePC();
-    }
-
-    kernel->machine->WriteRegister(2, SysWait(name));
-    delete[] name;
-    return countValuePC();
-}
-
-void handle_SC_Signal() {
-    int virtAddr = kernel->machine->ReadRegister(4);
-
-    char* name = stringUser2System(virtAddr);
-    if (name == NULL) {
-        DEBUG(dbgSys, "\n Not enough memory in System");
-        ASSERT(false);
-        kernel->machine->WriteRegister(2, -1);
-        delete[] name;
-        return countValuePC();
-    }
-
-    kernel->machine->WriteRegister(2, SysSignal(name));
-    delete[] name;
-    return countValuePC();
-}
-
-void handle_SC_GetPid() {
-    kernel->machine->WriteRegister(2, SysGetPid());
-    return countValuePC();
-}
-
 void ExceptionHandler(ExceptionType which) {
     int type = kernel->machine->ReadRegister(2);
 
@@ -389,20 +304,12 @@ void ExceptionHandler(ExceptionType which) {
                 case SC_Seek:
                     return handle_SC_Seek();
                 case SC_Exec:
-                    return handle_SC_Exec();
                 case SC_Join:
-                    return handle_SC_Join();
                 case SC_Exit:
-                    return handle_SC_Exit();
                 case SC_CreateSemaphore:
-                    return handle_SC_CreateSemaphore();
                 case SC_Wait:
-                    return handle_SC_Wait();
                 case SC_Signal:
-                    return handle_SC_Signal();
                 case SC_GetPid:
-                    return handle_SC_GetPid();
-                    
                 case SC_Create:
                 case SC_ThreadFork:
                 case SC_ThreadYield:

@@ -56,7 +56,7 @@ MailBox::MailBox() { messages = new SynchList<Mail *>(); }
 //----------------------------------------------------------------------
 
 MailBox::~MailBox() { delete messages; }
-   
+
 //----------------------------------------------------------------------
 // PrintHeader
 // 	Print the message header -- the destination machine ID and mailbox

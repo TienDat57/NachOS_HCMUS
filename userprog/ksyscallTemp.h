@@ -20,41 +20,29 @@
 #define SPACE ((char)' ')
 
 /* maximum length of an interger (included the minus sign) */
-#define MAX_NUM_LENGTH 11
+#define MAX_NUM_LENGTH 20
 /* A buffer to read and write number */
 char _numberBuffer[MAX_NUM_LENGTH + 2];
 
 char isBlank(char c) { return c == LF || c == CR || c == TAB || c == SPACE; }
 
 /**
- * Read and store characters in the _numberBuffer until blank
- * or end of file
+ * Read and store characters in the _numberBuffer until blank or end of file
  *
  * It will read at most MAX_NUM_LENGTH + 1 character
  **/
 void readUntilBlank() {
     memset(_numberBuffer, 0, sizeof(_numberBuffer));
-    char c = kernel->synchConsoleIn->GetChar();
+    char character = kernel->synchConsoleIn->GetChar();
 
-    if (c == EOF) {
-        DEBUG(dbgSys, "Unexpected end of file - number expected");
-        return;
-    }
+    if (character == EOF || isBlank(character)) return;
 
-    if (isBlank(c)) {
-        DEBUG(dbgSys, "Unexpected white-space - number expected");
-        return;
-    }
+    int count = 0;
 
-    int n = 0;
-
-    while (!(isBlank(c) || c == EOF)) {
-        _numberBuffer[n++] = c;
-        if (n > MAX_NUM_LENGTH) {
-            DEBUG(dbgSys, "Number is too long");
-            return;
-        }
-        c = kernel->synchConsoleIn->GetChar();
+    while (!(isBlank(character) || character == EOF)) {
+        _numberBuffer[count++] = character;
+        if (count > MAX_NUM_LENGTH) return;
+        character = kernel->synchConsoleIn->GetChar();
     }
 }
 

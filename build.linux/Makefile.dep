@@ -3198,7 +3198,7 @@ exception.o: ../userprog/exception.cc /usr/include/stdc-predef.h \
  ../threads/stable.h ../threads/sem.h ../threads/ptable.h \
  ../threads/pcb.h ../userprog/syscall.h ../userprog/errno.h \
  ../userprog/ksyscall.h ../userprog/synchconsole.h ../machine/console.h \
- ../threads/synch.h ../userprog/ksyscallhelper.h \
+ ../threads/synch.h ../userprog/ksyscallTemp.h \
  /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
  /usr/include/c++/4.8/limits

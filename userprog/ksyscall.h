@@ -13,7 +13,7 @@
 
 #include "kernel.h"
 #include "synchconsole.h"
-#include "ksyscallhelper.h"
+#include "ksyscallTemp.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <limits>
@@ -34,18 +34,15 @@ int SysReadNum() {
 
     bool nega = (_numberBuffer[0] == '-');
     int zeros = 0;
-    bool is_leading = true;
+    bool isLead = true;
     int num = 0;
     for (int i = nega; i < len; ++i) {
         char c = _numberBuffer[i];
-        if (c == '0' && is_leading)
+        if (c == '0' && isLead)
             ++zeros;
         else
-            is_leading = false;
-        if (c < '0' || c > '9') {
-            DEBUG(dbgSys, "Expected number but " << _numberBuffer << " found");
-            return 0;
-        }
+            isLead = false;
+        if (c < '0' || c > '9') return 0;
         num = num * 10 + (c - '0');
     }
 
@@ -55,30 +52,11 @@ int SysReadNum() {
         return 0;
     }
 
-    if (nega)
-        /**
-         * This is why we need to handle -2147483648 individually:
-         * 2147483648 is larger than the range of int32
-         */
-        num = -num;
+    if (nega) num = -num;
 
     // It's safe to return directly if the number is small
     if (len <= MAX_NUM_LENGTH - 2) return num;
 
-    /**
-     * We need to make sure that number is equal to the number in the buffer.
-     *
-     * Ask: Why do we need that?
-     * Answer: Because it's impossible to tell whether the number is bigger
-     * than INT32_MAX or smaller than INT32_MIN if it has the same length.
-     *
-     * For example: 3 000 000 000.
-     *
-     * In that case, that number will cause an overflow. However, C++
-     * doens't raise interger overflow, so we need to make sure that the input
-     * string and the output number is equal.
-     *
-     */
     if (compareNumAndString(num, _numberBuffer))
         return num;
     else
@@ -88,26 +66,26 @@ int SysReadNum() {
     return 0;
 }
 
-void SysPrintNum(int num) {
-    if (num == 0) return kernel->synchConsoleOut->PutChar('0');
+void SysPrintNum(int number) {
+    if (number == 0) return kernel->synchConsoleOut->PutChar('0');
 
-    if (num == INT32_MIN) {
+    if (number == INT32_MIN) {
         kernel->synchConsoleOut->PutChar('-');
         for (int i = 0; i < 10; ++i)
             kernel->synchConsoleOut->PutChar("2147483648"[i]);
         return;
     }
 
-    if (num < 0) {
+    if (number < 0) {
         kernel->synchConsoleOut->PutChar('-');
-        num = -num;
+        number = -number;
     }
-    int n = 0;
-    while (num) {
-        _numberBuffer[n++] = num % 10;
-        num /= 10;
+    int count = 0;
+    while (number) {
+        _numberBuffer[count++] = number % 10;
+        number /= 10;
     }
-    for (int i = n - 1; i >= 0; --i)
+    for (int i = count - 1; i >= 0; --i)
         kernel->synchConsoleOut->PutChar(_numberBuffer[i] + '0');
 }
 
@@ -121,42 +99,35 @@ int SysRandomNum() { return random(); }
 
 char* SysReadString(int length) {
     char* buffer = new char[length + 1];
-    for (int i = 0; i < length; i++) {
-        buffer[i] = SysReadChar();
-    }
+    for (int i = 0; i < length; i++) buffer[i] = SysReadChar();
     buffer[length] = '\0';
     return buffer;
 }
 
 void SysPrintString(char* buffer, int length) {
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < length; i++)
         kernel->synchConsoleOut->PutChar(buffer[i]);
-    }
 }
 
 bool SysCreateFile(char* fileName) {
-    bool success;
     int fileNameLength = strlen(fileName);
 
     if (fileNameLength == 0) {
-        DEBUG(dbgSys, "\nFile name can't be empty");
-        success = false;
-
+        DEBUG(dbgSys, "File name emtry\n");
+        return false;
     } else if (fileName == NULL) {
-        DEBUG(dbgSys, "\nNot enough memory in system");
-        success = false;
+        DEBUG(dbgSys, "Not memory allocated\n");
+        return false;
 
     } else {
-        DEBUG(dbgSys, "\nFile's name read successfully");
-        if (!kernel->fileSystem->Create(fileName)) {
-            DEBUG(dbgSys, "\nError creating file");
-            success = false;
-        } else {
-            success = true;
+        DEBUG(dbgSys, "Read successfully\n");
+        if (!kernel->fileSystem->Create(fileName)){
+            DEBUG(dbgSys, "Error creating file\n");
+            return false;
         }
+        else return true;
     }
-
-    return success;
+    return false;
 }
 
 int SysOpen(char* fileName, int type) {
@@ -184,9 +155,7 @@ int SysWrite(char* buffer, int charCount, int fileId) {
     return kernel->fileSystem->Write(buffer, charCount, fileId);
 }
 
-int SysRemove(char* fileName) {
-   return kernel->fileSystem->Remove(fileName);
-}
+int SysRemove(char* fileName) { return kernel->fileSystem->Remove(fileName); }
 
 int SysSeek(int seekPos, int fileId) {
     if (fileId <= 1) {
@@ -195,61 +164,5 @@ int SysSeek(int seekPos, int fileId) {
     }
     return kernel->fileSystem->Seek(seekPos, fileId);
 }
-
-int SysExec(char* name) {
-    // cerr << "call: `" << name  << "`"<< endl;
-    OpenFile* oFile = kernel->fileSystem->Open(name);
-    if (oFile == NULL) {
-        DEBUG(dbgSys, "\nExec:: Can't open this file.");
-        return -1;
-    }
-
-    delete oFile;
-
-    // Return child process id
-    return kernel->pTab->ExecUpdate(name);
-}
-
-int SysJoin(int id) { return kernel->pTab->JoinUpdate(id); }
-
-int SysExit(int id) { return kernel->pTab->ExitUpdate(id); }
-
-int SysCreateSemaphore(char* name, int initialValue) {
-    int res = kernel->semTab->Create(name, initialValue);
-
-    if (res == -1) {
-        DEBUG('a', "\nError creating semaphore");
-        delete[] name;
-        return -1;
-    }
-
-    return 0;
-}
-
-int SysWait(char* name) {
-    int res = kernel->semTab->Wait(name);
-
-    if (res == -1) {
-        DEBUG('a', "\nSemaphore not found");
-        delete[] name;
-        return -1;
-    }
-
-    return 0;
-}
-
-int SysSignal(char* name) {
-    int res = kernel->semTab->Signal(name);
-
-    if (res == -1) {
-        DEBUG('a', "\nSemaphore not found");
-        delete[] name;
-        return -1;
-    }
-
-    return 0;
-}
-
-int SysGetPid() { return kernel->currentThread->processID; }
 
 #endif /* ! __USERPROG_KSYSCALL_H__ */
