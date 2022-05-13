@@ -22,7 +22,7 @@ int main() {
     while (buffer[lenBuffer] != '\0') lenBuffer++;
     Close(fileIDIn);
 
-    PrintString("Input file name out: ");
+    PrintString("Ouput file name out: ");
     ReadString(fileNameOut, 8);  // test file oke.txt
 
     fileIDOut = Open(fileNameOut, MODE_READWRITE);

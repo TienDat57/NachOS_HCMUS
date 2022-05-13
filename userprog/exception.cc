@@ -49,30 +49,30 @@
 //	is in machine.h.
 //----------------------------------------------------------------------
 
-char* stringUser2System(int addr, int convert_length = -1) {
+char* User2System(int virtAddr, int limit = -1) {
     int length = 0;
     bool stop = false;
-    char* str;
+    char* kernelBuf;
 
     do {
         int oneChar;
-        kernel->machine->ReadMem(addr + length, 1, &oneChar);
+        kernel->machine->ReadMem(virtAddr + length, 1, &oneChar);
         length++;
-        stop = ((oneChar == '\0' && convert_length == -1) ||
-                length == convert_length);
+        stop = ((oneChar == '\0' && limit == -1) ||
+                length == limit);
     } while (!stop);
 
-    str = new char[length];
+    kernelBuf = new char[length];
     for (int i = 0; i < length; i++) {
         int oneChar;
-        kernel->machine->ReadMem(addr + i, 1,
+        kernel->machine->ReadMem(virtAddr + i, 1,
                                  &oneChar);  // copy characters to kernel space
-        str[i] = (unsigned char)oneChar;
+        kernelBuf[i] = (unsigned char)oneChar;
     }
-    return str;
+    return kernelBuf;
 }
 
-void StringSys2User(char* str, int addr, int convert_length = -1) {
+void System2User(char* str, int addr, int convert_length = -1) {
     int length = (convert_length == -1 ? strlen(str) : convert_length);
     for (int i = 0; i < length; i++) {
         kernel->machine->WriteMem(addr + i, 1,
@@ -147,21 +147,21 @@ void handle_SC_RandomNum() {
 
 #define MAX_READ_STRING_LENGTH 255
 void handle_SC_ReadString() {
-    int memPtr = kernel->machine->ReadRegister(4);  
-    int length = kernel->machine->ReadRegister(5);  
+    int memPtr = kernel->machine->ReadRegister(4);
+    int length = kernel->machine->ReadRegister(5);
     if (length > MAX_READ_STRING_LENGTH) {  // avoid allocating large memory
         DEBUG(dbgSys, "String length exceeds " << MAX_READ_STRING_LENGTH);
         SysHalt();
     }
     char* buffer = SysReadString(length);
-    StringSys2User(buffer, memPtr);
+    System2User(buffer, memPtr);
     delete[] buffer;
     return countValuePC();
 }
 
 void handle_SC_PrintString() {
-    int memPtr = kernel->machine->ReadRegister(4); 
-    char* buffer = stringUser2System(memPtr);
+    int memPtr = kernel->machine->ReadRegister(4);
+    char* buffer = User2System(memPtr);
 
     SysPrintString(buffer, strlen(buffer));
     delete[] buffer;
@@ -170,7 +170,7 @@ void handle_SC_PrintString() {
 
 void handle_SC_CreateFile() {
     int virtAddr = kernel->machine->ReadRegister(4);
-    char* fileName = stringUser2System(virtAddr);
+    char* fileName = User2System(virtAddr);
 
     if (SysCreateFile(fileName))
         kernel->machine->WriteRegister(2, 0);
@@ -183,7 +183,7 @@ void handle_SC_CreateFile() {
 
 void handle_SC_Open() {
     int virtAddr = kernel->machine->ReadRegister(4);
-    char* fileName = stringUser2System(virtAddr);
+    char* fileName = User2System(virtAddr);
     int type = kernel->machine->ReadRegister(5);
 
     kernel->machine->WriteRegister(2, SysOpen(fileName, type));
@@ -202,13 +202,14 @@ void handle_SC_Close() {
 void handle_SC_Read() {
     int virtAddr = kernel->machine->ReadRegister(4);
     int charCount = kernel->machine->ReadRegister(5);
-    char* buffer = stringUser2System(virtAddr, charCount);
+    char* buffer = User2System(virtAddr, charCount);
     int fileId = kernel->machine->ReadRegister(6);
 
-    DEBUG(dbgFile, "Read " << charCount << " chars from file " << fileId << "\n");
+    DEBUG(dbgFile,
+          "Read " << charCount << " chars from file " << fileId << "\n");
 
     kernel->machine->WriteRegister(2, SysRead(buffer, charCount, fileId));
-    StringSys2User(buffer, virtAddr, charCount);
+    System2User(buffer, virtAddr, charCount);
 
     delete[] buffer;
     return countValuePC();
@@ -217,25 +218,25 @@ void handle_SC_Read() {
 void handle_SC_Write() {
     int virtAddr = kernel->machine->ReadRegister(4);
     int charCount = kernel->machine->ReadRegister(5);
-    char* buffer = stringUser2System(virtAddr, charCount);
+    char* buffer = User2System(virtAddr, charCount);
     int fileId = kernel->machine->ReadRegister(6);
 
-    DEBUG(dbgFile, "Write " << charCount << " chars to file " << fileId << "\n");
+    DEBUG(dbgFile,
+          "Write " << charCount << " chars to file " << fileId << "\n");
 
     kernel->machine->WriteRegister(2, SysWrite(buffer, charCount, fileId));
-    StringSys2User(buffer, virtAddr, charCount);
+    System2User(buffer, virtAddr, charCount);
 
     delete[] buffer;
     return countValuePC();
 }
 
-void handle_SC_Remove()
-{
+void handle_SC_Remove() {
     int virtAddr = kernel->machine->ReadRegister(4);
-    char* fileName = stringUser2System(virtAddr);
+    char* fileName = User2System(virtAddr);
 
     kernel->machine->WriteRegister(2, SysRemove(fileName));
-    
+
     return countValuePC();
 }
 
@@ -306,10 +307,6 @@ void ExceptionHandler(ExceptionType which) {
                 case SC_Exec:
                 case SC_Join:
                 case SC_Exit:
-                case SC_CreateSemaphore:
-                case SC_Wait:
-                case SC_Signal:
-                case SC_GetPid:
                 case SC_Create:
                 case SC_ThreadFork:
                 case SC_ThreadYield:

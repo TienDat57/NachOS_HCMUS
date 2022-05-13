@@ -35,19 +35,15 @@
 #define SC_ThreadExit   14
 #define SC_ThreadJoin   15
 
-#define SC_Add 16
-#define SC_ReadNum 17
-#define SC_PrintNum 18
-#define SC_ReadChar 19
-#define SC_PrintChar 20
-#define SC_RandomNum 21
-#define SC_ReadString 22
-#define SC_PrintString 23
-#define SC_CreateFile 24
-#define SC_CreateSemaphore 25
-#define SC_Wait 26
-#define SC_Signal 27
-#define SC_GetPid 28
+#define SC_Add 42
+#define SC_ReadNum 43
+#define SC_PrintNum 44
+#define SC_ReadChar 45
+#define SC_PrintChar 46
+#define SC_RandomNum 47
+#define SC_ReadString 48
+#define SC_PrintString 49
+#define SC_CreateFile 50
 
 #ifndef IN_ASM
 

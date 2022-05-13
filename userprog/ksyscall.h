@@ -105,8 +105,7 @@ char* SysReadString(int length) {
 }
 
 void SysPrintString(char* buffer, int length) {
-    for (int i = 0; i < length; i++)
-        kernel->synchConsoleOut->PutChar(buffer[i]);
+    kernel->synchConsoleOut->PutString(buffer, length);
 }
 
 bool SysCreateFile(char* fileName) {
@@ -121,11 +120,11 @@ bool SysCreateFile(char* fileName) {
 
     } else {
         DEBUG(dbgSys, "Read successfully\n");
-        if (!kernel->fileSystem->Create(fileName)){
+        if (!kernel->fileSystem->Create(fileName)) {
             DEBUG(dbgSys, "Error creating file\n");
             return false;
-        }
-        else return true;
+        } else
+            return true;
     }
     return false;
 }
@@ -142,16 +141,16 @@ int SysOpen(char* fileName, int type) {
 int SysClose(int id) { return kernel->fileSystem->Close(id); }
 
 int SysRead(char* buffer, int charCount, int fileId) {
-    if (fileId == 0) {
+    if (fileId == 0)
         return kernel->synchConsoleIn->GetString(buffer, charCount);
-    }
+
     return kernel->fileSystem->Read(buffer, charCount, fileId);
 }
 
 int SysWrite(char* buffer, int charCount, int fileId) {
-    if (fileId == 1) {
+    if (fileId == 1) 
         return kernel->synchConsoleOut->PutString(buffer, charCount);
-    }
+    
     return kernel->fileSystem->Write(buffer, charCount, fileId);
 }
 
