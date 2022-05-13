@@ -90,7 +90,7 @@ void countValuePC() {
                                    kernel->machine->ReadRegister(PCReg) + 4);
 }
 
-void handle_not_implemented_SC(int type) {
+void NOT_IMPLEMENTED(int type) {
     DEBUG(dbgSys, "Not yet implemented syscall " << type << "\n");
     return countValuePC();
 }
@@ -313,7 +313,7 @@ void ExceptionHandler(ExceptionType which) {
                 case SC_ExecV:
                 case SC_ThreadExit:
                 case SC_ThreadJoin:
-                    return handle_not_implemented_SC(type);
+                    return NOT_IMPLEMENTED(type);
 
                 default:
                     cerr << "Unexpected system call " << type << "\n";
