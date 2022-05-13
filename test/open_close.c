@@ -12,9 +12,6 @@ int main() {
         PrintNum(id);
         PrintString("\n");
 
-        PrintString("Pointer position pointer:");
-        PrintNum(Seek(2, id));
-
         Close(id);
     } else
         PrintString("Open file failed\n");

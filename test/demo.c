@@ -28,6 +28,21 @@ int main() {
 
     // Remove("abc.txt");
 
-    PrintString("\n\n");
+    //test seek
+    // int file_output;
+    // file_output = Open("datdu.txt", 0);
+    // if (file_output == -1) {
+    //     PrintString("Cannot open file output.txt\n");
+    // } else {
+    //     int tmp = Seek(3, file_output);
+    //     Seek(tmp + 2, file_output);
+    //     Write("  ", 2, file_output);
+    //     Close(file_output);
+    // }
+    // /***********End of Remove the last `,` in output file**********/
+    // PrintString("\nDone\n");
+    // return 0;
+
+    // PrintString("\n\n");
     return 0;
 }
